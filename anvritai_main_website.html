@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANVRITAI — The Intelligence Layer of the Future</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--cyan:#00f5ff;--blue:#0066ff;--violet:#7b2fff;--dark:#020408;--card-bg:rgba(0,20,40,0.6);
+--glow-cyan:0 0 20px rgba(0,245,255,0.4);--glow-blue:0 0 30px rgba(0,102,255,0.5);
+}
+html{scroll-behavior:smooth}
+body{background:#020408;color:#e0f0ff;font-family:'Exo 2',sans-serif;overflow-x:hidden;cursor:none}
+
+/* CUSTOM CURSOR */
+#cursor{position:fixed;width:12px;height:12px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width 0.2s,height 0.2s,background 0.2s;mix-blend-mode:screen;box-shadow:0 0 15px var(--cyan),0 0 30px rgba(0,245,255,0.4)}
+#cursor-trail{position:fixed;width:36px;height:36px;border:1px solid rgba(0,245,255,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.12s ease;mix-blend-mode:screen}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:#010204}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--cyan),var(--violet));border-radius:3px}
+
+/* INTRO OVERLAY */
+#intro{position:fixed;inset:0;background:#000;z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s ease}
+#intro.hide{opacity:0;pointer-events:none}
+.intro-logo{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,6vw,4.5rem);font-weight:900;letter-spacing:0.3em;color:transparent;background:linear-gradient(135deg,var(--cyan),var(--blue),var(--violet));-webkit-background-clip:text;background-clip:text;animation:logoPulse 0.5s ease-out}
+.intro-line{width:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),transparent);margin:1.5rem auto;animation:lineExpand 1s ease forwards 0.3s}
+.intro-status{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--cyan);letter-spacing:0.2em;opacity:0;animation:fadeUp 0.5s ease forwards 0.8s;text-align:center}
+.boot-items{margin-top:2rem;display:flex;flex-direction:column;gap:0.4rem;opacity:0;animation:fadeUp 0.5s ease forwards 1s}
+.boot-item{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:rgba(0,245,255,0.6);display:flex;align-items:center;gap:0.8rem}
+.boot-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:bootPulse 0.5s ease infinite alternate}
+.progress-bar{width:300px;height:2px;background:rgba(0,245,255,0.1);border-radius:2px;margin-top:2rem;overflow:hidden;opacity:0;animation:fadeUp 0.5s ease forwards 1.2s}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:2px;animation:progress 1.8s ease forwards 1.4s;width:0}
+
+@keyframes logoPulse{0%{opacity:0;letter-spacing:0.8em}100%{opacity:1;letter-spacing:0.3em}}
+@keyframes lineExpand{to{width:400px}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bootPulse{from{opacity:0.3}to{opacity:1}}
+@keyframes progress{to{width:100%}}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:1.2rem 4vw;display:flex;align-items:center;justify-content:space-between;background:rgba(2,4,8,0.6);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,245,255,0.08)}
+.nav-logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:0.15em;background:linear-gradient(135deg,var(--cyan),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:rgba(180,220,255,0.7);text-decoration:none;letter-spacing:0.12em;transition:color 0.3s}
+.nav-links a:hover{color:var(--cyan)}
+.nav-cta{font-family:'Orbitron',sans-serif;font-size:0.65rem;font-weight:700;padding:0.55rem 1.4rem;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,245,255,0.05);letter-spacing:0.12em;cursor:pointer;transition:all 0.3s;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+.nav-cta:hover{background:rgba(0,245,255,0.12);box-shadow:var(--glow-cyan)}
+
+/* HERO */
+#hero{min-height:100vh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#canvas-hero{position:absolute;inset:0;z-index:0}
+.hero-content{position:relative;z-index:2;text-align:center;max-width:1000px;padding:2rem}
+.hero-badge{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.25em;color:var(--cyan);border:1px solid rgba(0,245,255,0.3);padding:0.4rem 1.2rem;display:inline-block;margin-bottom:2rem;position:relative;clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+.hero-badge::before{content:'';position:absolute;inset:0;background:rgba(0,245,255,0.04)}
+.hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(2.2rem,6vw,5.5rem);font-weight:900;line-height:1.05;letter-spacing:0.06em;margin-bottom:1.5rem;color:#fff;text-shadow:0 0 60px rgba(0,245,255,0.2)}
+.hero-title span{background:linear-gradient(135deg,var(--cyan) 0%,var(--blue) 50%,var(--violet) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-sub{font-size:clamp(0.9rem,2vw,1.15rem);color:rgba(180,220,255,0.75);max-width:680px;margin:0 auto 3rem;line-height:1.75;font-weight:300}
+.hero-btns{display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap}
+.btn-primary{font-family:'Orbitron',sans-serif;font-size:0.75rem;font-weight:700;padding:1rem 2.5rem;background:linear-gradient(135deg,rgba(0,102,255,0.3),rgba(123,47,255,0.3));border:1px solid rgba(0,245,255,0.5);color:var(--cyan);letter-spacing:0.15em;cursor:pointer;position:relative;overflow:hidden;transition:all 0.4s;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.btn-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--cyan),var(--blue));opacity:0;transition:opacity 0.4s}
+.btn-primary:hover::before{opacity:0.15}
+.btn-primary:hover{box-shadow:0 0 40px rgba(0,245,255,0.3),0 0 80px rgba(0,102,255,0.2);transform:translateY(-2px)}
+.btn-secondary{font-family:'Orbitron',sans-serif;font-size:0.75rem;font-weight:700;padding:1rem 2.5rem;background:transparent;border:1px solid rgba(180,220,255,0.2);color:rgba(180,220,255,0.8);letter-spacing:0.15em;cursor:pointer;transition:all 0.4s;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.btn-secondary:hover{border-color:rgba(180,220,255,0.5);color:#fff;background:rgba(180,220,255,0.05)}
+
+/* HUD elements */
+.hud-left{position:absolute;left:3vw;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;gap:1rem}
+.hud-right{position:absolute;right:3vw;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;gap:1rem}
+.hud-panel{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:rgba(0,245,255,0.5);border:1px solid rgba(0,245,255,0.12);padding:0.6rem 0.8rem;background:rgba(0,245,255,0.02);line-height:1.8;letter-spacing:0.08em;min-width:140px}
+.hud-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--cyan);margin-right:0.4rem;animation:hudPulse 1.5s ease infinite}
+@keyframes hudPulse{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+.ai-status{position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:rgba(0,245,255,0.4);letter-spacing:0.2em;animation:statusBlink 2s ease infinite}
+@keyframes statusBlink{0%,100%{opacity:0.4}50%{opacity:1}}
+
+/* SECTION BASE */
+section{padding:8rem 6vw;position:relative;overflow:hidden}
+.section-tag{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.3em;color:var(--cyan);margin-bottom:1rem;display:flex;align-items:center;gap:0.8rem}
+.section-tag::before{content:'';width:30px;height:1px;background:var(--cyan)}
+.section-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,4vw,3.2rem);font-weight:900;letter-spacing:0.05em;line-height:1.1;margin-bottom:1.5rem}
+.section-sub{font-size:1rem;color:rgba(180,220,255,0.65);max-width:600px;line-height:1.8;font-weight:300}
+
+/* GLOW DIVIDER */
+.glow-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(0,245,255,0.3),rgba(123,47,255,0.3),transparent);margin:0}
+
+/* ABOUT */
+#about{background:linear-gradient(180deg,#020408 0%,#020d1a 50%,#020408 100%)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;margin-top:4rem}
+.about-visual{position:relative;height:500px}
+.about-core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(0,102,255,0.3),rgba(123,47,255,0.2),transparent);border:1px solid rgba(0,245,255,0.2);animation:coreRotate 8s linear infinite;box-shadow:0 0 60px rgba(0,102,255,0.3),inset 0 0 40px rgba(0,245,255,0.1)}
+.about-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(0,245,255,0.15);animation:ringRotate 6s linear infinite}
+.r1{width:280px;height:280px;animation-duration:6s}
+.r2{width:360px;height:360px;animation-duration:10s;animation-direction:reverse;border-color:rgba(123,47,255,0.15)}
+.r3{width:440px;height:440px;animation-duration:15s;border-style:dashed;border-color:rgba(0,245,255,0.08)}
+@keyframes coreRotate{from{box-shadow:0 0 60px rgba(0,102,255,0.3),inset 0 0 40px rgba(0,245,255,0.1)}to{box-shadow:0 0 80px rgba(123,47,255,0.4),inset 0 0 60px rgba(0,245,255,0.15)}}
+@keyframes ringRotate{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.about-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.about-text-card{background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.1);padding:2rem;margin-bottom:1.5rem;position:relative;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);transition:all 0.4s}
+.about-text-card:hover{border-color:rgba(0,245,255,0.25);background:rgba(0,245,255,0.05);box-shadow:var(--glow-cyan)}
+.about-text-card h3{font-family:'Orbitron',sans-serif;font-size:0.9rem;font-weight:700;color:var(--cyan);letter-spacing:0.1em;margin-bottom:0.6rem}
+.about-text-card p{font-size:0.88rem;color:rgba(180,220,255,0.65);line-height:1.75}
+
+/* MISSION */
+#mission{background:#020408}
+.mission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:4rem}
+.mission-card{padding:2rem;border:1px solid rgba(0,245,255,0.1);background:rgba(0,20,40,0.4);position:relative;overflow:hidden;transition:all 0.4s;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.mission-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,245,255,0.05),transparent);transition:left 0.6s}
+.mission-card:hover::before{left:100%}
+.mission-card:hover{border-color:rgba(0,245,255,0.3);background:rgba(0,245,255,0.04);transform:translateY(-4px);box-shadow:var(--glow-cyan)}
+.mission-icon{font-size:2rem;margin-bottom:1rem;display:block}
+.mission-card h3{font-family:'Orbitron',sans-serif;font-size:0.85rem;font-weight:700;color:#fff;letter-spacing:0.08em;margin-bottom:0.6rem}
+.mission-card p{font-size:0.82rem;color:rgba(180,220,255,0.55);line-height:1.7}
+
+/* METRICS */
+#metrics{background:linear-gradient(135deg,#020408,#040d1f,#020408)}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2rem;margin-top:4rem}
+.metric-card{text-align:center;padding:2.5rem 1.5rem;border:1px solid rgba(0,245,255,0.1);background:rgba(0,245,255,0.02);position:relative;overflow:hidden}
+.metric-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,255,0.03),transparent);pointer-events:none}
+.metric-val{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;color:var(--cyan);display:block;line-height:1;margin-bottom:0.5rem;text-shadow:0 0 20px rgba(0,245,255,0.5)}
+.metric-label{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:rgba(180,220,255,0.5);letter-spacing:0.18em;text-transform:uppercase}
+.metric-bar{position:absolute;bottom:0;left:0;width:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet));animation:metricBar 2s ease forwards var(--delay)}
+@keyframes metricBar{to{width:100%}}
+
+/* TECH */
+#tech{background:#020408}
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;margin-top:4rem}
+.tech-card{padding:1.8rem;border:1px solid rgba(0,245,255,0.08);background:rgba(0,15,30,0.5);position:relative;overflow:hidden;transition:all 0.4s;cursor:default}
+.tech-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.4s}
+.tech-card:hover::before{opacity:1}
+.tech-card:hover{border-color:rgba(0,245,255,0.25);background:rgba(0,245,255,0.04);transform:perspective(600px) rotateY(-3deg) rotateX(2deg) translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 30px rgba(0,245,255,0.1)}
+.tech-num{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:rgba(0,245,255,0.35);margin-bottom:0.8rem;letter-spacing:0.15em}
+.tech-icon{font-size:1.8rem;margin-bottom:0.8rem;display:block}
+.tech-card h3{font-family:'Orbitron',sans-serif;font-size:0.78rem;font-weight:700;color:#e0f0ff;letter-spacing:0.08em;margin-bottom:0.5rem}
+.tech-card p{font-size:0.75rem;color:rgba(180,220,255,0.45);line-height:1.65}
+.tech-tag{display:inline-block;margin-top:0.8rem;font-family:'JetBrains Mono',monospace;font-size:0.55rem;padding:0.2rem 0.6rem;border:1px solid rgba(0,245,255,0.2);color:rgba(0,245,255,0.6);letter-spacing:0.1em}
+
+/* VISUALIZATION */
+#visualization{background:linear-gradient(180deg,#020408,#020d1f 50%,#020408);text-align:center;min-height:80vh;display:flex;flex-direction:column;justify-content:center;align-items:center}
+#canvas-viz{display:block;margin:3rem auto}
+.float-labels{display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;margin-top:2rem}
+.float-label{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.18em;color:rgba(0,245,255,0.5);border:1px solid rgba(0,245,255,0.15);padding:0.4rem 1rem;animation:labelFloat 3s ease-in-out infinite;background:rgba(0,245,255,0.02)}
+.float-label:nth-child(2){animation-delay:0.6s}
+.float-label:nth-child(3){animation-delay:1.2s}
+.float-label:nth-child(4){animation-delay:1.8s}
+.float-label:nth-child(5){animation-delay:2.4s}
+@keyframes labelFloat{0%,100%{transform:translateY(0);opacity:0.5}50%{transform:translateY(-6px);opacity:0.9}}
+
+/* ECOSYSTEM */
+#ecosystem{background:#020408}
+.ecosystem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;margin-top:4rem}
+.eco-card{border:1px solid rgba(0,245,255,0.12);background:linear-gradient(135deg,rgba(0,15,30,0.8),rgba(0,30,60,0.4));padding:2.5rem;position:relative;overflow:hidden;transition:all 0.5s;clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);cursor:pointer}
+.eco-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,255,0.06),transparent);opacity:0;transition:opacity 0.5s}
+.eco-card:hover::before{opacity:1}
+.eco-card:hover{border-color:rgba(0,245,255,0.4);transform:perspective(800px) rotateY(-5deg) rotateX(3deg) translateY(-8px);box-shadow:0 30px 80px rgba(0,0,0,0.6),0 0 40px rgba(0,245,255,0.15),inset 0 0 20px rgba(0,245,255,0.03)}
+.eco-badge{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;padding:0.3rem 0.8rem;border:1px solid;display:inline-block;margin-bottom:1.2rem}
+.eco-badge.live{border-color:rgba(0,245,255,0.4);color:var(--cyan);background:rgba(0,245,255,0.05)}
+.eco-badge.soon{border-color:rgba(123,47,255,0.4);color:#a855f7;background:rgba(123,47,255,0.05)}
+.eco-card h2{font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:900;color:#fff;letter-spacing:0.05em;margin-bottom:0.5rem}
+.eco-card .eco-sub{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:rgba(0,245,255,0.5);letter-spacing:0.15em;margin-bottom:1rem}
+.eco-card p{font-size:0.85rem;color:rgba(180,220,255,0.6);line-height:1.7;margin-bottom:1.5rem}
+.eco-arrow{font-family:'Orbitron',sans-serif;font-size:0.65rem;color:var(--cyan);letter-spacing:0.15em;display:flex;align-items:center;gap:0.5rem;transition:gap 0.3s}
+.eco-card:hover .eco-arrow{gap:1rem}
+.eco-glow-line{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.4s}
+.eco-card:hover .eco-glow-line{opacity:1}
+
+/* ROADMAP */
+#roadmap{background:linear-gradient(180deg,#020408,#030a18,#020408)}
+.timeline{position:relative;margin-top:4rem;padding-left:3rem}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,var(--cyan),var(--violet),transparent)}
+.timeline-item{position:relative;padding:0 0 3rem 2.5rem}
+.timeline-item::before{content:'';position:absolute;left:-5px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--cyan);box-shadow:0 0 15px var(--cyan)}
+.timeline-item:nth-child(even)::before{background:var(--violet);box-shadow:0 0 15px var(--violet)}
+.timeline-phase{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--cyan);letter-spacing:0.2em;margin-bottom:0.4rem}
+.timeline-item:nth-child(even) .timeline-phase{color:var(--violet)}
+.timeline-title{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:0.06em;margin-bottom:0.5rem}
+.timeline-desc{font-size:0.85rem;color:rgba(180,220,255,0.55);line-height:1.7;max-width:500px}
+
+/* CTA */
+#cta{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(0,102,255,0.15),rgba(123,47,255,0.1),#020408);text-align:center;padding:10rem 6vw}
+.cta-title{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,5vw,4rem);font-weight:900;letter-spacing:0.08em;margin-bottom:1rem;line-height:1.1}
+.cta-sub{font-size:1rem;color:rgba(180,220,255,0.6);max-width:550px;margin:0 auto 3rem;line-height:1.75}
+.cta-btns{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap}
+
+/* FOOTER */
+footer{background:#010204;border-top:1px solid rgba(0,245,255,0.08);padding:4rem 6vw 2rem}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:3rem}
+.footer-logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.5rem;letter-spacing:0.15em;background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:1rem}
+.footer-tagline{font-size:0.8rem;color:rgba(180,220,255,0.45);line-height:1.7;margin-bottom:1.5rem;font-style:italic}
+.footer-contact{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:rgba(0,245,255,0.5);line-height:2}
+.footer-col h4{font-family:'Orbitron',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.15em;color:rgba(180,220,255,0.5);margin-bottom:1.2rem}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:0.7rem}
+.footer-col a{font-size:0.8rem;color:rgba(180,220,255,0.4);text-decoration:none;transition:color 0.3s;letter-spacing:0.05em}
+.footer-col a:hover{color:var(--cyan)}
+.footer-bottom{border-top:1px solid rgba(0,245,255,0.06);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap-1rem}
+.footer-copy{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:rgba(180,220,255,0.25);letter-spacing:0.1em}
+.made-in{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:rgba(180,220,255,0.25);letter-spacing:0.1em}
+
+/* SCROLL INDICATOR */
+.scroll-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet));z-index:1001;transition:width 0.1s;width:0}
+
+/* REVEAL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.8s ease,transform 0.8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:0.1s}
+.reveal-delay-2{transition-delay:0.2s}
+.reveal-delay-3{transition-delay:0.3s}
+
+@media(max-width:768px){
+  .about-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .hud-left,.hud-right{display:none}
+  nav ul{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-logo">ANVRITAI</div>
+  <div class="intro-line"></div>
+  <div class="intro-status">◈ INITIALIZING INTELLIGENCE LAYER ◈</div>
+  <div class="boot-items">
+    <div class="boot-item"><span class="boot-dot" style="animation-delay:0s"></span>AGI CORE ENGINE............ONLINE</div>
+    <div class="boot-item"><span class="boot-dot" style="animation-delay:0.3s"></span>NEURAL NETWORKS..............ACTIVE</div>
+    <div class="boot-item"><span class="boot-dot" style="animation-delay:0.6s"></span>ROBOTICS INTELLIGENCE.........READY</div>
+    <div class="boot-item"><span class="boot-dot" style="animation-delay:0.9s"></span>GLOBAL INFRASTRUCTURE.........SYNC</div>
+    <div class="boot-item"><span class="boot-dot" style="animation-delay:1.2s"></span>ECOSYSTEM MODULES.............LOADED</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ANVRITAI</div>
+  <ul class="nav-links">
+    <li><a href="#about">VISION</a></li>
+    <li><a href="#tech">TECHNOLOGY</a></li>
+    <li><a href="#ecosystem">ECOSYSTEM</a></li>
+    <li><a href="#roadmap">ROADMAP</a></li>
+  </ul>
+  <button class="nav-cta">ENTER SYSTEM</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="canvas-hero"></canvas>
+
+  <div class="hud-left">
+    <div class="hud-panel">
+      <div><span class="hud-dot"></span>SYS STATUS</div>
+      <div>AGI CORE: ONLINE</div>
+      <div>NODES: 47,291</div>
+      <div>LATENCY: 0.3ms</div>
+    </div>
+    <div class="hud-panel">
+      <div><span class="hud-dot" style="animation-delay:0.5s"></span>NETWORK</div>
+      <div>REGIONS: 180+</div>
+      <div>UPTIME: 99.99%</div>
+    </div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-badge">◈ AGI INFRASTRUCTURE PLATFORM ◈</div>
+    <h1 class="hero-title">THE FUTURE<br>RUNS ON <span>ANVRITAI</span></h1>
+    <p class="hero-sub">Building the intelligence infrastructure powering the next generation of AI, automation, robotics, finance, operating systems, and autonomous digital ecosystems.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="document.getElementById('tech').scrollIntoView({behavior:'smooth'})">◈ EXPLORE FUTURE</button>
+      <button class="btn-secondary" onclick="document.getElementById('ecosystem').scrollIntoView({behavior:'smooth'})">ENTER ECOSYSTEM →</button>
+    </div>
+  </div>
+
+  <div class="hud-right">
+    <div class="hud-panel">
+      <div><span class="hud-dot" style="animation-delay:0.8s"></span>AI OPS</div>
+      <div>REQ/SEC: 14,392</div>
+      <div>AGENTS: 2,841</div>
+    </div>
+    <div class="hud-panel">
+      <div><span class="hud-dot" style="animation-delay:1.2s"></span>INTELLIGENCE</div>
+      <div>MODELS: ACTIVE</div>
+      <div>AGI LAYER: v3.1</div>
+    </div>
+  </div>
+
+  <div class="ai-status">◈ ANVRITAI INTELLIGENCE LAYER — OPERATIONAL ◈</div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-tag">ABOUT ANVRITAI</div>
+  <div class="about-grid">
+    <div>
+      <h2 class="section-title reveal">We Are Not<br><span style="background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent">Building Software.</span><br>We Are Building<br>The Future.</h2>
+      <p class="section-sub reveal reveal-delay-1" style="margin-bottom:2.5rem">ANVRITAI is the world's most ambitious AI infrastructure ecosystem — a living intelligence layer that powers the next generation of digital civilization.</p>
+
+      <div class="about-text-card reveal reveal-delay-1">
+        <h3>◈ WHAT IS ANVRITAI</h3>
+        <p>ANVRITAI is a deep-technology platform engineering the foundational AI operating layer for businesses, autonomous systems, financial intelligence, and human-machine collaboration at civilizational scale.</p>
+      </div>
+      <div class="about-text-card reveal reveal-delay-2">
+        <h3>◈ WHY WE EXIST</h3>
+        <p>The world needs an AI infrastructure layer that goes beyond chatbots and wrappers. ANVRITAI builds the intelligent plumbing — AGI engines, autonomous agents, robotics intelligence, and self-evolving systems.</p>
+      </div>
+      <div class="about-text-card reveal reveal-delay-3">
+        <h3>◈ HUMAN + AI EVOLUTION</h3>
+        <p>We believe the future belongs to the symbiosis of human creativity and machine intelligence. ANVRITAI creates the substrate where this convergence becomes civilization's greatest leap forward.</p>
+      </div>
+    </div>
+    <div class="about-visual">
+      <div class="about-core"></div>
+      <div class="about-ring r1"></div>
+      <div class="about-ring r2"></div>
+      <div class="about-ring r3"></div>
+      <!-- orbital dots -->
+      <div class="about-dot" style="top:18%;left:65%;box-shadow:0 0 10px var(--cyan)"></div>
+      <div class="about-dot" style="top:75%;left:22%;background:var(--violet);box-shadow:0 0 10px var(--violet)"></div>
+      <div class="about-dot" style="top:40%;left:82%"></div>
+      <div class="about-dot" style="top:62%;left:70%"></div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- MISSION -->
+<section id="mission">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="section-tag">GLOBAL MISSION</div>
+    <h2 class="section-title reveal">Intelligence<br><span style="background:linear-gradient(90deg,var(--cyan),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent">For All of Humanity</span></h2>
+    <p class="section-sub reveal reveal-delay-1">Democratizing advanced AI infrastructure — making civilization-grade intelligence accessible to every business, every nation, every human.</p>
+
+    <div class="mission-grid" style="margin-top:3rem">
+      <div class="mission-card reveal">
+        <span class="mission-icon">⬡</span>
+        <h3>AI DEMOCRATIZATION</h3>
+        <p>Making enterprise-grade AI infrastructure accessible to businesses of all sizes, enabling the next wave of intelligent companies.</p>
+      </div>
+      <div class="mission-card reveal reveal-delay-1">
+        <span class="mission-icon">◎</span>
+        <h3>INTELLIGENT AUTOMATION</h3>
+        <p>End-to-end autonomous workflows that eliminate friction, accelerate operations, and evolve through intelligence.</p>
+      </div>
+      <div class="mission-card reveal reveal-delay-2">
+        <span class="mission-icon">◈</span>
+        <h3>FUTURE-READY BUSINESSES</h3>
+        <p>Transforming traditional enterprises into AI-native organisms that think, adapt, and grow autonomously.</p>
+      </div>
+      <div class="mission-card reveal reveal-delay-1">
+        <span class="mission-icon">⬢</span>
+        <h3>DIGITAL INTELLIGENCE LAYER</h3>
+        <p>Building the invisible intelligence substrate that powers every digital interaction, decision, and transaction.</p>
+      </div>
+      <div class="mission-card reveal reveal-delay-2">
+        <span class="mission-icon">◉</span>
+        <h3>AI INFRASTRUCTURE FOR HUMANITY</h3>
+        <p>Infrastructure-grade AI systems designed for resilience, scale, and the demands of global civilization.</p>
+      </div>
+      <div class="mission-card reveal reveal-delay-3">
+        <span class="mission-icon">⬟</span>
+        <h3>SCALABLE INTELLIGENCE</h3>
+        <p>From single startups to global enterprises — ANVRITAI scales intelligence to meet any demand, any scale.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- METRICS -->
+<section id="metrics">
+  <div style="max-width:1200px;margin:0 auto;text-align:center">
+    <div class="section-tag" style="justify-content:center">LIVE SYSTEM METRICS</div>
+    <h2 class="section-title reveal">The Scale of<br><span style="background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent">Future Intelligence</span></h2>
+    <div class="metrics-grid">
+      <div class="metric-card reveal"><span class="metric-val" data-count="12">0</span><span class="metric-label">MILLION AI OPS</span><div class="metric-bar" style="--delay:0.2s"></div></div>
+      <div class="metric-card reveal reveal-delay-1"><span class="metric-val" data-count="180">0</span><span class="metric-label">COUNTRIES POWERED</span><div class="metric-bar" style="--delay:0.4s"></div></div>
+      <div class="metric-card reveal reveal-delay-2"><span class="metric-val" data-count="45">0</span><span class="metric-label">BILLION AI REQUESTS</span><div class="metric-bar" style="--delay:0.6s"></div></div>
+      <div class="metric-card reveal reveal-delay-1"><span class="metric-val">99.99<span style="font-size:1.5rem">%</span></span><span class="metric-label">AI RELIABILITY</span><div class="metric-bar" style="--delay:0.8s"></div></div>
+      <div class="metric-card reveal reveal-delay-2"><span class="metric-val" data-count="250">0</span><span class="metric-label">K+ ECOSYSTEM USERS</span><div class="metric-bar" style="--delay:1s"></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- TECH -->
+<section id="tech">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="section-tag">FUTURE TECHNOLOGIES</div>
+    <h2 class="section-title reveal">What We're<br><span style="background:linear-gradient(90deg,var(--blue),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent">Engineering</span></h2>
+    <p class="section-sub reveal reveal-delay-1">Advanced technology domains where ANVRITAI is redefining what's possible.</p>
+
+    <div class="tech-grid">
+      <div class="tech-card reveal"><div class="tech-num">01</div><span class="tech-icon">⬡</span><h3>AGI INFRASTRUCTURE</h3><p>Foundation-level artificial general intelligence systems built for reliability and scale.</p><span class="tech-tag">CORE LAYER</span></div>
+      <div class="tech-card reveal reveal-delay-1"><div class="tech-num">02</div><span class="tech-icon">◎</span><h3>ROBOTICS INTELLIGENCE</h3><p>Autonomous robotic systems fused with perception, reasoning, and adaptive intelligence.</p><span class="tech-tag">PHYSICAL AI</span></div>
+      <div class="tech-card reveal reveal-delay-2"><div class="tech-num">03</div><span class="tech-icon">◈</span><h3>NEURAL AI SYSTEMS</h3><p>Deep neural architectures modeled on biological intelligence for superhuman cognitive tasks.</p><span class="tech-tag">NEURAL</span></div>
+      <div class="tech-card reveal reveal-delay-3"><div class="tech-num">04</div><span class="tech-icon">⬢</span><h3>AI OPERATING SYSTEMS</h3><p>Intelligence-first OS layers that manage compute, memory, and AI tasks natively.</p><span class="tech-tag">OS LAYER</span></div>
+      <div class="tech-card reveal"><div class="tech-num">05</div><span class="tech-icon">◉</span><h3>AUTONOMOUS AGENTS</h3><p>Self-directed AI agents that plan, execute, and adapt across complex multi-step workflows.</p><span class="tech-tag">AGENTS</span></div>
+      <div class="tech-card reveal reveal-delay-1"><div class="tech-num">06</div><span class="tech-icon">⬟</span><h3>AI WORKFLOW ENGINES</h3><p>Intelligent orchestration pipelines that automate enterprise-grade processes end-to-end.</p><span class="tech-tag">AUTOMATION</span></div>
+      <div class="tech-card reveal reveal-delay-2"><div class="tech-num">07</div><span class="tech-icon">◊</span><h3>FUTURE COMMERCE AI</h3><p>Next-generation commerce intelligence — autonomous pricing, prediction, and optimization.</p><span class="tech-tag">COMMERCE</span></div>
+      <div class="tech-card reveal reveal-delay-3"><div class="tech-num">08</div><span class="tech-icon">◇</span><h3>VOICE INTELLIGENCE</h3><p>Multimodal voice AI with understanding, emotion, and language models at human parity.</p><span class="tech-tag">VOICE</span></div>
+      <div class="tech-card reveal"><div class="tech-num">09</div><span class="tech-icon">⬠</span><h3>AI CLOUD ECOSYSTEMS</h3><p>Distributed AI cloud infrastructure optimized for latency, scale, and intelligence workloads.</p><span class="tech-tag">CLOUD</span></div>
+      <div class="tech-card reveal reveal-delay-1"><div class="tech-num">10</div><span class="tech-icon">◆</span><h3>INTELLIGENT AUTOMATION</h3><p>Self-learning automation networks that improve through operation and evolve over time.</p><span class="tech-tag">NETWORKS</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- VISUALIZATION -->
+<section id="visualization">
+  <div class="section-tag" style="justify-content:center">INTELLIGENCE VISUALIZATION</div>
+  <h2 class="section-title reveal" style="text-align:center">The ANVRITAI<br><span style="background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent">Neural Core</span></h2>
+  <canvas id="canvas-viz" width="600" height="400"></canvas>
+  <div class="float-labels">
+    <span class="float-label">AUTONOMOUS INTELLIGENCE</span>
+    <span class="float-label">AGI INFRASTRUCTURE</span>
+    <span class="float-label">FUTURE SYSTEMS</span>
+    <span class="float-label">DIGITAL CIVILIZATION</span>
+    <span class="float-label">HUMAN + MACHINE EVOLUTION</span>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- ECOSYSTEM -->
+<section id="ecosystem">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-tag">ECOSYSTEM MODULES</div>
+    <h2 class="section-title reveal">The ANVRITAI<br><span style="background:linear-gradient(90deg,var(--cyan),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent">Product Gateway</span></h2>
+    <p class="section-sub reveal reveal-delay-1">Intelligence-powered operating systems for the domains that matter most.</p>
+
+    <div class="ecosystem-grid">
+      <div class="eco-card reveal" onclick="window.location.href='/abhay'">
+        <span class="eco-badge live">LIVE SYSTEM</span>
+        <h2>ABHAY</h2>
+        <div class="eco-sub">ACCOUNTING OPERATING SYSTEM</div>
+        <p>Next-generation AI-powered accounting and financial operating system for intelligent businesses. Autonomous ledgers, predictive forecasting, and real-time financial intelligence.</p>
+        <div class="eco-arrow">ENTER ABHAY <span>→</span></div>
+        <div class="eco-glow-line"></div>
+      </div>
+      <div class="eco-card reveal reveal-delay-1" onclick="window.location.href='/sayyam'">
+        <span class="eco-badge live">LIVE SYSTEM</span>
+        <h2>SAYYAM</h2>
+        <div class="eco-sub">MARKETING OPERATING SYSTEM</div>
+        <p>Advanced AI-powered marketing, branding, growth, and digital intelligence operating system. Autonomous campaigns, predictive growth, and brand intelligence at scale.</p>
+        <div class="eco-arrow">ENTER SAYYAM <span>→</span></div>
+        <div class="eco-glow-line"></div>
+      </div>
+      <div class="eco-card reveal reveal-delay-2" onclick="window.location.href='/anvx'">
+        <span class="eco-badge soon">COMING SOON</span>
+        <h2>ANVX</h2>
+        <div class="eco-sub">NEXT-GEN PROGRAMMING LANGUAGE</div>
+        <p>A futuristic next-generation programming language designed for AI-native systems and intelligent applications. Code that thinks, adapts, and evolves with your intelligence stack.</p>
+        <div class="eco-arrow" style="color:rgba(168,85,247,0.7)">EXPLORE ANVX <span>→</span></div>
+        <div class="eco-glow-line" style="background:linear-gradient(90deg,transparent,var(--violet),transparent)"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div style="max-width:800px;margin:0 auto">
+    <div class="section-tag">FUTURE ROADMAP</div>
+    <h2 class="section-title reveal">Building<br><span style="background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent">Tomorrow's Stack</span></h2>
+
+    <div class="timeline">
+      <div class="timeline-item reveal"><div class="timeline-phase">PHASE 01 — FOUNDATION</div><div class="timeline-title">AI Infrastructure Layer</div><div class="timeline-desc">Establishing the core AGI engine, neural processing systems, and foundational intelligence APIs that power all ANVRITAI ecosystem products.</div></div>
+      <div class="timeline-item reveal reveal-delay-1"><div class="timeline-phase">PHASE 02 — ENTERPRISE</div><div class="timeline-title">Autonomous Enterprise Systems</div><div class="timeline-desc">Deploying self-managing enterprise intelligence systems — autonomous accounting, marketing, operations, and decision intelligence at corporate scale.</div></div>
+      <div class="timeline-item reveal reveal-delay-2"><div class="timeline-phase">PHASE 03 — PHYSICAL AI</div><div class="timeline-title">Robotics Intelligence</div><div class="timeline-desc">Fusing software AGI with physical robotic systems — autonomous machines that perceive, reason, and operate in complex real-world environments.</div></div>
+      <div class="timeline-item reveal reveal-delay-1"><div class="timeline-phase">PHASE 04 — AGI</div><div class="timeline-title">AGI Integration</div><div class="timeline-desc">Activating full artificial general intelligence capabilities — systems that generalize across domains, learn autonomously, and outperform human specialists.</div></div>
+      <div class="timeline-item reveal reveal-delay-2"><div class="timeline-phase">PHASE 05 — CLOUD</div><div class="timeline-title">AI Cloud Networks</div><div class="timeline-desc">Global distributed AI cloud infrastructure — sovereign intelligence nodes across 180+ countries enabling low-latency, high-availability AI at civilizational scale.</div></div>
+      <div class="timeline-item reveal"><div class="timeline-phase">PHASE 06 — CIVILIZATION</div><div class="timeline-title">Global AI Ecosystem</div><div class="timeline-desc">The complete ANVRITAI global ecosystem — a unified intelligence platform powering governments, enterprises, and individuals across the planet.</div></div>
+      <div class="timeline-item reveal reveal-delay-1"><div class="timeline-phase">PHASE 07 — BEYOND</div><div class="timeline-title">Future Civilization Stack</div><div class="timeline-desc">The complete digital civilization infrastructure — autonomous cities, intelligent supply chains, AI-governed systems, and the full human-machine symbiosis.</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="section-tag" style="justify-content:center">BEGIN YOUR JOURNEY</div>
+  <h2 class="cta-title reveal">ENTER THE NEXT ERA<br><span style="background:linear-gradient(135deg,var(--cyan),var(--blue),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent">OF INTELLIGENCE</span></h2>
+  <p class="cta-sub reveal reveal-delay-1">ANVRITAI is building the digital intelligence layer for the future of humanity. The future is being written now.</p>
+  <div class="cta-btns">
+    <button class="btn-primary" onclick="document.getElementById('ecosystem').scrollIntoView({behavior:'smooth'})">◈ ACCESS ECOSYSTEM</button>
+    <button class="btn-secondary" onclick="document.getElementById('tech').scrollIntoView({behavior:'smooth'})">EXPLORE TECHNOLOGY →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">ANVRITAI</div>
+      <p class="footer-tagline">"The Intelligence Layer of the Future"</p>
+      <p class="footer-contact">founder@anvritai.com<br>+91-77985 36456</p>
+    </div>
+    <div class="footer-col">
+      <h4>ECOSYSTEM</h4>
+      <ul>
+        <li><a href="/abhay">ABHAY Accounting OS</a></li>
+        <li><a href="/sayyam">SAYYAM Mark OS</a></li>
+        <li><a href="/anvx">ANVX Language</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>MISSION</h4>
+      <ul>
+        <li><a href="#about">About ANVRITAI</a></li>
+        <li><a href="#mission">Global Mission</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>TECHNOLOGY</h4>
+      <ul>
+        <li><a href="#tech">AGI Infrastructure</a></li>
+        <li><a href="#tech">Robotics Intelligence</a></li>
+        <li><a href="#tech">Neural AI Systems</a></li>
+        <li><a href="#tech">Autonomous Agents</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2025 ANVRITAI. ALL RIGHTS RESERVED.</span>
+    <span class="made-in">MADE WITH ❤️ IN BHARAT</span>
+  </div>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursor-trail');
+let mx=0,my=0,tx=0,ty=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px'});
+function animTrail(){tx+=(mx-tx)*0.15;ty+=(my-ty)*0.15;trail.style.left=tx+'px';trail.style.top=ty+'px';requestAnimationFrame(animTrail)}
+animTrail();
+document.querySelectorAll('button,a,.eco-card,.tech-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.width='20px';cursor.style.height='20px';cursor.style.background='rgba(0,245,255,0.4)'});
+  el.addEventListener('mouseleave',()=>{cursor.style.width='12px';cursor.style.height='12px';cursor.style.background='var(--cyan)'});
+});
+
+// INTRO
+setTimeout(()=>{document.getElementById('intro').classList.add('hide');setTimeout(()=>document.getElementById('intro').remove(),800)},3200);
+
+// SCROLL PROGRESS
+window.addEventListener('scroll',()=>{
+  const p=(window.scrollY/(document.body.scrollHeight-window.innerHeight))*100;
+  document.getElementById('scrollProgress').style.width=p+'%';
+});
+
+// REVEAL ON SCROLL
+const revealObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>revealObs.observe(el));
+
+// HERO CANVAS — particle field + grid
+const hCanvas=document.getElementById('canvas-hero');
+const hCtx=hCanvas.getContext('2d');
+function resizeHero(){hCanvas.width=window.innerWidth;hCanvas.height=window.innerHeight}
+resizeHero();window.addEventListener('resize',resizeHero);
+
+const particles=[];
+for(let i=0;i<120;i++){
+  particles.push({
+    x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
+    vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,
+    size:Math.random()*2+0.5,
+    opacity:Math.random()*0.6+0.2,
+    color:Math.random()>0.6?'0,245,255':'0,102,255'
+  });
+}
+
+let mouseX=window.innerWidth/2,mouseY=window.innerHeight/2;
+document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+
+function drawHero(){
+  hCtx.clearRect(0,0,hCanvas.width,hCanvas.height);
+
+  // Radial gradient bg glow
+  const rg=hCtx.createRadialGradient(hCanvas.width/2,hCanvas.height/2,0,hCanvas.width/2,hCanvas.height/2,hCanvas.width*0.6);
+  rg.addColorStop(0,'rgba(0,40,80,0.15)');
+  rg.addColorStop(0.5,'rgba(0,20,40,0.08)');
+  rg.addColorStop(1,'rgba(0,0,0,0)');
+  hCtx.fillStyle=rg;hCtx.fillRect(0,0,hCanvas.width,hCanvas.height);
+
+  // Grid
+  hCtx.strokeStyle='rgba(0,245,255,0.04)';hCtx.lineWidth=0.5;
+  const gs=80;
+  for(let x=0;x<hCanvas.width;x+=gs){hCtx.beginPath();hCtx.moveTo(x,0);hCtx.lineTo(x,hCanvas.height);hCtx.stroke()}
+  for(let y=0;y<hCanvas.height;y+=gs){hCtx.beginPath();hCtx.moveTo(0,y);hCtx.lineTo(hCanvas.width,y);hCtx.stroke()}
+
+  // Mouse reactive light
+  const lr=hCtx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,300);
+  lr.addColorStop(0,'rgba(0,245,255,0.06)');
+  lr.addColorStop(1,'rgba(0,0,0,0)');
+  hCtx.fillStyle=lr;hCtx.fillRect(0,0,hCanvas.width,hCanvas.height);
+
+  // Particles + connections
+  particles.forEach((p,i)=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x=hCanvas.width;if(p.x>hCanvas.width)p.x=0;
+    if(p.y<0)p.y=hCanvas.height;if(p.y>hCanvas.height)p.y=0;
+
+    // Mouse attraction
+    const dx=mouseX-p.x,dy=mouseY-p.y,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<200){p.x+=dx*0.001;p.y+=dy*0.001}
+
+    hCtx.beginPath();hCtx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    hCtx.fillStyle=`rgba(${p.color},${p.opacity})`;hCtx.fill();
+
+    for(let j=i+1;j<particles.length;j++){
+      const q=particles[j];
+      const d=Math.sqrt((p.x-q.x)**2+(p.y-q.y)**2);
+      if(d<120){
+        hCtx.beginPath();hCtx.moveTo(p.x,p.y);hCtx.lineTo(q.x,q.y);
+        hCtx.strokeStyle=`rgba(0,245,255,${0.08*(1-d/120)})`;
+        hCtx.lineWidth=0.4;hCtx.stroke();
+      }
+    }
+  });
+
+  // Center glow orb
+  const cg=hCtx.createRadialGradient(hCanvas.width/2,hCanvas.height/2,0,hCanvas.width/2,hCanvas.height/2,150);
+  cg.addColorStop(0,'rgba(0,102,255,0.08)');
+  cg.addColorStop(0.5,'rgba(123,47,255,0.04)');
+  cg.addColorStop(1,'rgba(0,0,0,0)');
+  hCtx.fillStyle=cg;hCtx.fillRect(0,0,hCanvas.width,hCanvas.height);
+
+  requestAnimationFrame(drawHero);
+}
+drawHero();
+
+// VIZ CANVAS
+const vCanvas=document.getElementById('canvas-viz');
+const vCtx=vCanvas.getContext('2d');
+vCanvas.width=Math.min(600,window.innerWidth-80);
+vCanvas.height=360;
+let vAngle=0;
+
+const nodes=[];
+for(let i=0;i<18;i++){nodes.push({angle:Math.random()*Math.PI*2,r:80+Math.random()*100,speed:(Math.random()-0.5)*0.01})}
+
+function drawViz(){
+  vCtx.clearRect(0,0,vCanvas.width,vCanvas.height);
+  const cx=vCanvas.width/2,cy=vCanvas.height/2;
+  vAngle+=0.003;
+
+  // Outer rings
+  [130,100,70,45].forEach((r,i)=>{
+    vCtx.beginPath();vCtx.arc(cx,cy,r,0,Math.PI*2);
+    vCtx.strokeStyle=`rgba(0,245,255,${0.08-i*0.015})`;
+    vCtx.lineWidth=i%2===0?0.5:0.3;
+    if(i===1){vCtx.setLineDash([4,8])}else{vCtx.setLineDash([])}
+    vCtx.stroke();
+  });
+  vCtx.setLineDash([]);
+
+  // Rotating ring
+  vCtx.save();vCtx.translate(cx,cy);vCtx.rotate(vAngle);
+  vCtx.beginPath();vCtx.arc(0,0,115,0,Math.PI*1.6);
+  vCtx.strokeStyle='rgba(0,245,255,0.4)';vCtx.lineWidth=1;vCtx.stroke();
+  vCtx.beginPath();vCtx.arc(0,0,115,0,0.1);
+  vCtx.strokeStyle='rgba(0,245,255,0.9)';vCtx.lineWidth=3;vCtx.stroke();
+  vCtx.restore();
+
+  vCtx.save();vCtx.translate(cx,cy);vCtx.rotate(-vAngle*0.7);
+  vCtx.beginPath();vCtx.arc(0,0,85,0,Math.PI*1.2);
+  vCtx.strokeStyle='rgba(123,47,255,0.35)';vCtx.lineWidth=1;vCtx.stroke();
+  vCtx.restore();
+
+  // Core
+  const cg=vCtx.createRadialGradient(cx,cy,0,cx,cy,45);
+  cg.addColorStop(0,'rgba(0,180,255,0.5)');
+  cg.addColorStop(0.4,'rgba(0,102,255,0.3)');
+  cg.addColorStop(1,'rgba(0,0,0,0)');
+  vCtx.fillStyle=cg;vCtx.beginPath();vCtx.arc(cx,cy,45,0,Math.PI*2);vCtx.fill();
+  vCtx.beginPath();vCtx.arc(cx,cy,12,0,Math.PI*2);
+  vCtx.fillStyle='rgba(0,245,255,0.9)';vCtx.fill();
+  vCtx.beginPath();vCtx.arc(cx,cy,6,0,Math.PI*2);
+  vCtx.fillStyle='#fff';vCtx.fill();
+
+  // Neural nodes
+  nodes.forEach(n=>{
+    n.angle+=n.speed;
+    const nx=cx+Math.cos(n.angle)*n.r;
+    const ny=cy+Math.sin(n.angle)*n.r;
+    vCtx.beginPath();vCtx.moveTo(cx,cy);vCtx.lineTo(nx,ny);
+    vCtx.strokeStyle='rgba(0,245,255,0.07)';vCtx.lineWidth=0.4;vCtx.stroke();
+    vCtx.beginPath();vCtx.arc(nx,ny,2.5,0,Math.PI*2);
+    vCtx.fillStyle=n.r>130?'rgba(123,47,255,0.8)':'rgba(0,245,255,0.7)';vCtx.fill();
+  });
+
+  // Pulse ring
+  const pSize=(Math.sin(vAngle*3)*0.5+0.5)*30+120;
+  vCtx.beginPath();vCtx.arc(cx,cy,pSize,0,Math.PI*2);
+  vCtx.strokeStyle=`rgba(0,245,255,${0.06-pSize*0.0003})`;
+  vCtx.lineWidth=0.5;vCtx.stroke();
+
+  requestAnimationFrame(drawViz);
+}
+drawViz();
+
+// COUNTER ANIMATION
+const counterObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const el=e.target;
+    const target=parseInt(el.dataset.count);
+    if(!target)return;
+    let current=0;const step=target/60;
+    const interval=setInterval(()=>{
+      current+=step;
+      if(current>=target){current=target;clearInterval(interval)}
+      el.textContent=Math.floor(current)+(el.nextSibling&&el.nextSibling.textContent?'':'');
+    },25);
+    counterObs.unobserve(el);
+  });
+},{threshold:0.5});
+document.querySelectorAll('[data-count]').forEach(el=>counterObs.observe(el));
+</script>
+</body>
+</html>
